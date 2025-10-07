@@ -28,7 +28,7 @@ flowchart TD
     B --> C{Similarity High?}
     
     C -->|No| I[Use Original LLM]
-    I --> D[Return API Result to User]
+    I --> R[Return LLM response to User]
     
     C -->|Yes| B2[RAG Semantic Search]
     B2 --> C2[MCP API Caller]
