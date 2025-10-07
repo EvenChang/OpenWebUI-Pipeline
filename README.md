@@ -25,12 +25,19 @@ When an MCP API call fails due to missing parameters, the pipeline uses an **LLM
 ```mermaid
 flowchart TD
     A[User Input] --> B[Vector Retrieval]
-    B -->|Chroma Semantic Search| C[MCP API Caller]
-    C -->|Success| D[Return API Result to User]
-    C -->|422 Error| E[LLM Reasoner]
+    B --> C{Similarity High?}
+    
+    C -->|No| I[Use Original LLM]
+    I --> D[Return API Result to User]
+    
+    C -->|Yes| B2[RAG Semantic Search]
+    B2 --> C2[MCP API Caller]
+    C2 -->|Success| D[Return API Result to User]
+    C2 -->|422 Error| E[LLM Reasoner]
     E --> F[Infer or Request Params]
     F --> G[Re-call MCP API]
     G --> H[Return Final Result to User]
+
 ```
 
 
