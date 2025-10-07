@@ -6,7 +6,7 @@ A Manifold RAG pipeline integrating Chroma and LLMs with multi-model routing, co
 This pipeline extends the traditional **RAG (Retrieval-Augmented Generation)** workflow with **intelligent API integration**.  
 When an MCP API call fails due to missing parameters, the pipeline uses an **LLM reasoning layer** to:
 
-- Infer missing parameters from conversation history, or  
+- Infer missing parameters from conversation history.
 - Ask the user for clarification — instead of simply returning a 422 error.
 
 
