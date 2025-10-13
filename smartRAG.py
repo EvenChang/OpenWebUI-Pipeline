@@ -7,7 +7,7 @@ license: MIT
 description: A Manifold RAG pipeline integrating Chroma for semantic search and Ollama-based LLMs.
              Supports multi-model routing, conversation memory, and intelligent API recovery by using
              the LLM to infer or request missing parameters when an MCP API call fails .
-requirements: langchain-community, langchain-huggingface, sentence-transformers, faiss-cpu, requests, langchain-chroma
+requirements: llama-index-core==0.12.16, pydantic==2.7.4, langchain-community==0.3.30, langchain-huggingface, sentence-transformers, faiss-cpu, requests, langchain-chroma
 """
 from typing import List, Union, Generator, Iterator
 
