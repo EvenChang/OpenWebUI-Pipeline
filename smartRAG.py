@@ -1,5 +1,5 @@
 """
-title: FAISS + Ollama RAG Pipeline
+title: Ollama RAG Pipeline
 author: even
 date: 2025-09-11
 version: 1.1
@@ -19,10 +19,7 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain_chroma import Chroma
 from chromadb.config import Settings
 
-
-
 class Pipeline:
-
     class Valves(BaseModel):
         MCPO_SERVER_API_KEY: str = Field(default="eventest",
                                          description="MCPO Server API KEY, e.g. 'apikey'")
@@ -112,9 +109,17 @@ class Pipeline:
                 payload = body.get("payload", {})  # 假設你讓 UI 傳 payload
                 response = self.call_api(api_path, payload, user_message, server_name)
 
+
                 if isinstance(response, (dict, list)):
-                    pretty_json = json.dumps(response, ensure_ascii=False, indent=2)
-                    return f"```json\n{pretty_json}\n```"
+                    def response_generator(data):
+                        yield "```json\n"
+                        pretty_json = json.dumps(data, ensure_ascii=False, indent=2)
+                        for line in pretty_json.splitlines():
+                            yield line + "\n"
+                        yield "```"
+
+                    return response_generator(response)  # 回傳 generator
+
                 return str(response)
 
             except Exception as e:
@@ -123,20 +128,17 @@ class Pipeline:
 
         return f"LLM {model_id} not supported"
 
-    def call_original_llm(self, user_message: str):
 
+    def call_original_llm(self, user_message: str):
+        self.memory.chat_memory.clear()
         client = OpenAI(
             base_url=self.valves.OPENAI_BASE_URL,
             api_key=self.valves.OPENAI_API_KEY,  # required, but unused
         )
-        history = self.memory.load_memory_variables({}).get("history", [])
-        print("history", history)
 
         system_prompt = "You are a ChatGPT, answer the user's questions"
-        messages = [{"role": "system", "content": system_prompt}]
-        if history:
-            messages.append({"role": "user", "content": history})
-        messages.append({"role": "user", "content": user_message})
+        messages = [{"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message}]
 
         resp = client.chat.completions.create(
             model=self.valves.MODEL,
@@ -145,8 +147,8 @@ class Pipeline:
         )
 
         llm_content = resp.choices[0].message.content
-        self.memory.chat_memory.add_user_message(user_message)
-        self.memory.chat_memory.add_ai_message(llm_content)
+        # self.memory.chat_memory.add_user_message(user_message)
+        # self.memory.chat_memory.add_ai_message(llm_content)
         print("call original LLM : ", llm_content)
 
         return llm_content
@@ -218,6 +220,7 @@ class Pipeline:
         print("url: " + url , "headers: ", headers , "payload: ", payload)
 
         response = requests.post(url, headers=headers, json=payload)
+
         if response.status_code == 200:
             print(f"response.json : {response.json()}")
             return response.status_code, response.json()
@@ -263,7 +266,7 @@ class Pipeline:
                     "Your task:\n"
                     "1. If you can infer all required parameters, return JSON in the format:\n"
                     '{ "api": "<api_path>", "params": {"<param_name>": "<value>"}} \n'
-                    "2. If you cannot infer the parameter values, DO NOT return empty strings or placeholders.\n"
+                    "2. If you cannot infer the parameter values, DO NOT return empty strings or placeholders(like '', 'N/A', or '<unknown>').\n"
                     "   Instead, return JSON in this format:\n"
                     '{ "missing_params": ["<param1>", "<param2>", ...], "message": "Please provide these parameters." }\n'
                     "Rules:\n"
@@ -275,6 +278,9 @@ class Pipeline:
                 ollama_response = self.call_llm(system_prompt, user_message, server_url)
                 print(f"ollama_response: {ollama_response}")
                 return ollama_response
+            else:
+                response = error_data.get("detail", {})
+                return response
 
         except Exception as e:
             print(f"Exception : {e}, {response.text}")
