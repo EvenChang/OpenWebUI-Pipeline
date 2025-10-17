@@ -1,5 +1,3 @@
-
-The `extract-openapi-mcp.py` goal is to convert `openapi.json`  
 ## Introduction
 The purpose of `extract-openapi-mcp.py` is to extract essential fields from an openapi.json file to generate both RAG import YAML and OpenWebUI Prompt JSON files.
 
