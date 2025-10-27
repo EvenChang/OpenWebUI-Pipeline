@@ -57,12 +57,12 @@ curl http://192.168.40.112:38002/zabbix/openapi.json > zabbix.json
 3. Generate the RAG YAML and prompt JSON files
 
 ```
-python extract-openapi-mcp.py  zabbix.json -s 192.168.40.112:38002/zabbix -o zabbix.yaml -p zabbix_prompt.json
+python extract-openapi-mcp.py  zabbix.json -s Zabbix -o zabbix.yaml -p zabbix_prompt.json
 ```
 
 ## Notes
 
-- -s specifies the MCP server URL.
+- -s specifies the MCP server name which added on website.
 
 - -o defines the output YAML file path for RAG import.
 
