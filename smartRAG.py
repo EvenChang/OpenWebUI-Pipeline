@@ -324,5 +324,5 @@ class Pipeline:
         servers = self.get_servers(token)
         for s in servers:
             if s.get("server_name") == server:
-                return s.get("server_ip")
+                return s.get("server_url")
         return None
